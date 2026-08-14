@@ -1,4 +1,6 @@
-﻿using OS.Application.Common.Exceptions;
+using OS.Application.Common.Exceptions;
+using OS.Application.Common.Models;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using System.Text.Json;
 
@@ -24,40 +26,64 @@ namespace OS.Webapi.Controllers.Middleware
 
         private Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
-            var code = HttpStatusCode.ExpectationFailed;
-            var result = string.Empty;
+            var statusCode = HttpStatusCode.InternalServerError;
+            var errors = new List<string>();
+            var message = ex.Message;
+
             switch (ex)
             {
                 case FluentValidation.ValidationException validationException:
-                    {
-                        code = HttpStatusCode.BadRequest;
-                        result = JsonSerializer.Serialize(validationException.Errors);
-                    }
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = "Format yoki ma'lumotlarni kiritishda xatolik bbor.";
+                    errors = validationException.Errors.Select(e => e.ErrorMessage).ToList();
                     break;
+
+                case UnauthorizedAccessException:
+                case SecurityTokenException:
+                    statusCode = HttpStatusCode.Unauthorized;
+                    message = ex.Message;
+                    errors.Add(ex.Message);
+                    break;
+
                 case NotFoundException:
-                    {
-                        code = HttpStatusCode.NotFound;
-                    }
+                case KeyNotFoundException:
+                    statusCode = HttpStatusCode.NotFound;
+                    message = ex.Message;
+                    errors.Add(ex.Message);
                     break;
+
                 case ConflictException:
-                    {
-                        code = HttpStatusCode.Conflict;
-                    }
-                    ; break;
-             
+                    statusCode = HttpStatusCode.Conflict;
+                    message = ex.Message;
+                    errors.Add(ex.Message);
+                    break;
+
+                case InvalidOperationException:
+                case ArgumentException:
+                    statusCode = HttpStatusCode.BadRequest;
+                    message = ex.Message;
+                    errors.Add(ex.Message);
+                    break;
+
+                default:
+                    statusCode = HttpStatusCode.InternalServerError;
+                    message = "Ichki server xatoligi yuz berdi.";
+                    errors.Add(ex.Message);
+                    break;
             }
+
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)code;
-            if (result == string.Empty)
+            context.Response.StatusCode = (int)statusCode;
+
+            var responseOptions = new JsonSerializerOptions
             {
-                result = JsonSerializer.Serialize(new { error = ex.Message });
-            }
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            var apiResponse = ApiResponse<object>.Failure(message, errors, (int)statusCode);
+            var result = JsonSerializer.Serialize(apiResponse, responseOptions);
 
             return context.Response.WriteAsync(result);
-
         }
-
-
     }
-
 }

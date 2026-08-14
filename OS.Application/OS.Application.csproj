@@ -25,7 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Operations\" />
+    <Folder Include="Operations\Auth\" />
+    <Folder Include="Operations\Products\" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,12 +1,12 @@
-﻿using OS.Domain.Models.Base;
+using OS.Domain.Models.Base;
 
 namespace OS.Domain.Models
 {
     public class Language : EmptyTable
     {
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public string Flag { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string Flag { get; set; } = string.Empty;
         public bool IsDefault { get; set; }
 
     }

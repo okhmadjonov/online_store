@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
 using MediatR;
 using System.Reflection;
 using OS.Application.Common.Behaviors;
+
+using OS.Application.Common.Utilities;
 
 namespace OS.Application
 {
@@ -15,6 +17,7 @@ namespace OS.Application
             services.AddValidatorsFromAssemblies(new[] { Assembly.GetExecutingAssembly() });
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            services.AddTransient<TokenManager>();
             return services;
         }
     }

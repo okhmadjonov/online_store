@@ -157,7 +157,7 @@ namespace OS.Webapi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", () => "James Sawyer");
+                endpoints.MapGet("/", ctx => { ctx.Response.Redirect("/swagger"); return Task.CompletedTask; });
                 endpoints.MapControllers();
             });
         }

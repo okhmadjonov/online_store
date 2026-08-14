@@ -29,7 +29,8 @@ namespace OS.Webapi
             string fileName = Path.Combine("Logs", "OSWebapi-.log");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .WriteTo.File(fileName, rollingInterval:RollingInterval.Day)
+                .WriteTo.Console()
+                .WriteTo.File(fileName, rollingInterval: RollingInterval.Day)
                 .CreateLogger();
             var host = CreateHostBuilder(args).Build();
 
@@ -69,13 +70,7 @@ namespace OS.Webapi
       Host.CreateDefaultBuilder(args)
           .UseSerilog()
           .ConfigureWebHostDefaults(webBuilder =>
-          {
-              //    webBuilder.UseKestrel(options =>
-              //    {
-              //        options.Listen(IPAddress.Any, 5002); // HTTP
-              //        //options.Listen(IPAddress.Any, 5000); // HTTPS
-              //        //options.Listen(IPAddress.Any, 5001); // HTTPS
-              //    });
+          { 
               webBuilder.UseStartup<Startup>();
           });
 
