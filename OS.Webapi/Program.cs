@@ -1,58 +1,83 @@
-var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+using OS.Persistence;
+using Serilog;
+using Serilog.Events;
+using System.Net;
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-
-// dotnet ef database update  --project OS.Persistence/OS.Persistence.csproj   --startup-project OS.Webapi/OS.Webapi.csproj
-// dotnet ef migrations add <name> --project BB.Persistence/BB.Persistence.csproj   --startup-project BB.Webapi/BB.Webapi.csproj
-
-// Shift+Option+F - Reformat (Macos)
-// Ctrl+Shift+I - Reformat (Windows)
-// dotnet publish BB.Webapi/BB.Webapi.csproj
-
-// dotnet run --project BB.Webapi/BB.Webapi.csproj seed 
-// dotnet run --project BB.Webapi/BB.Webapi.csproj temp
-// dotnet run --project BB.Webapi/BB.Webapi.csproj promocodes
-// dotnet run --project BB.Webapi/BB.Webapi.csproj deleteuser
-
-
-
-
-
-if (app.Environment.IsDevelopment())
+namespace OS.Webapi
 {
-    app.MapOpenApi();
-}
+    public class Program
+    {
 
-app.UseHttpsRedirection();
+        // Configure the HTTP request pipeline.
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+        // dotnet ef database update  --project OS.Persistence/OS.Persistence.csproj   --startup-project OS.Webapi/OS.Webapi.csproj
+        // dotnet ef migrations add Initial --project OS.Persistence/OS.Persistence.csproj   --startup-project OS.Webapi/OS.Webapi.csproj
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+       
+        // Ctrl+Shift+I - Reformat (Windows)
+        // dotnet publish OS.Webapi/OS.Webapi.csproj
 
-app.Run();
+        // dotnet run --project OS.Webapi/OS.Webapi.csproj seed 
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+
+
+
+
+        public static async Task Main(string[] args)
+        {
+            string fileName = Path.Combine("Logs", "OSWebapi-.log");
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .WriteTo.File(fileName, rollingInterval:RollingInterval.Day)
+                .CreateLogger();
+            var host = CreateHostBuilder(args).Build();
+
+            bool seed = false;
+            if (args.Length > 0)
+            {
+                seed = args.Any(x => x == "seed");
+            }
+
+            if (seed)
+            {
+                using (var scope = host.Services.CreateScope())
+                {
+                    var serviceProvider = scope.ServiceProvider;
+                    try
+                    {
+                        var configManager = WebApplication.CreateBuilder(args).Configuration;
+                        await DbInitializer.RunSeed(configManager, serviceProvider);
+
+                    }
+                    catch (Exception exception)
+                    {
+                        Log.Fatal(exception, "An error occurred while app initialization");
+                    }
+                }
+            }
+         
+            else
+            {
+                await host.RunAsync();
+            }
+        }
+
+
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+      Host.CreateDefaultBuilder(args)
+          .UseSerilog()
+          .ConfigureWebHostDefaults(webBuilder =>
+          {
+              //    webBuilder.UseKestrel(options =>
+              //    {
+              //        options.Listen(IPAddress.Any, 5002); // HTTP
+              //        //options.Listen(IPAddress.Any, 5000); // HTTPS
+              //        //options.Listen(IPAddress.Any, 5001); // HTTPS
+              //    });
+              webBuilder.UseStartup<Startup>();
+          });
+
+    }
 }

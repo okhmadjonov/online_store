@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using AutoMapper;
 
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OS.Application.Common.Mappings
 {
