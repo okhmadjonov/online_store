@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="OS.Application/OS.Application.csproj" />
+  <Project Path="OS.Domain/OS.Domain.csproj" />
+  <Project Path="OS.Persistence/OS.Persistence.csproj" />
+  <Project Path="OS.Webapi/OS.Webapi.csproj" />
+</Solution>
