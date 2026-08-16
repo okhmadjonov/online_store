@@ -1,4 +1,4 @@
-﻿namespace OS.Webapi.Controllers.Middleware
+namespace OS.Webapi.Middleware
 {
     public static class CustomExceptionHandlerMiddlewareExtensions
     {

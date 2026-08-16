@@ -1,7 +1,7 @@
-﻿using OS.Application.interfaces;
+using OS.Application.interfaces;
 using System.Security.Claims;
 
-namespace OS.Webapi.Controllers.Services
+namespace OS.Webapi.Services
 {
     public class CurrentUserService : ICurrentUserService
     {

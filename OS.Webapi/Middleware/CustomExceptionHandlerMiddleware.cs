@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Net;
 using System.Text.Json;
 
-namespace OS.Webapi.Controllers.Middleware
+namespace OS.Webapi.Middleware
 {
     public class CustomExceptionHandlerMiddleware
     {
