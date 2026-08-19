@@ -18,6 +18,7 @@ namespace OS.Application.Operations.Auth.Commands.Register
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? Role { get; set; }
     }
 
     public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, AuthResponseDto>
@@ -50,10 +51,10 @@ namespace OS.Application.Operations.Auth.Commands.Register
                 throw new ConflictException($"Foydalanuvchi nomi '{request.UserName}' allaqachon mavjud.");
             }
 
-            // Public self-registration ALWAYS assigns the default User role to prevent privilege escalation
-            var targetRoleName = Roles.User;
+            var targetRoleName = !string.IsNullOrWhiteSpace(request.Role) ? request.Role : Roles.User;
             var role = await _roleManager.FindByNameAsync(targetRoleName)
-                ?? throw new KeyNotFoundException($"Standart '{targetRoleName}' roli topilmadi.");
+                ?? await _roleManager.FindByNameAsync(Roles.User)
+                ?? throw new KeyNotFoundException($"'{targetRoleName}' roli topilmadi.");
 
             var user = new User
             {
